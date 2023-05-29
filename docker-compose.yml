@@ -1,0 +1,33 @@
+version: '3'
+services:
+  app:
+    build:
+      context: ./artifact
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    volumes:
+      - ./artifact/project_x/artifact/v0.0:/app/artifact/v0.0
+    ports:
+      - 8080:8080
+
+  db:
+    build:
+      context: ./postgre
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: your_username
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: your_database
+    volumes:
+      - ./artifact/postgre-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+

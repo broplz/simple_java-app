@@ -1,0 +1,34 @@
+# Dockerfile для проекта с Java-приложением, Nginx и PostgreSQL
+
+# Этап сборки Java-приложения
+FROM openjdk:17-oracle
+
+# Установка рабочей директории внутри контейнера
+WORKDIR /app
+
+# Копирование файлов приложения и pom.xml в контейнер
+COPY project_x.java .
+COPY pom.xml .
+
+# Установка необходимых зависимостей с помощью Maven
+RUN apt-get update && apt-get install -y maven
+RUN mvn dependency:resolve
+
+# Сборка артефакта
+RUN mvn package
+
+# Копирование артефакта в папку artifact/v0.0
+RUN mkdir -p /app/artifact/v0.0
+RUN cp /app/target/terminal-app-1.0.jar /app/artifact/v0.0/terminal-app.jar
+
+# Отдельный этап для создания образа Java-приложения
+FROM openjdk:17-jdk AS builder
+
+# Копирование собранного JAR-файла из предыдущего этапа в контейнер
+COPY --from=builder /app/artifact/v0.0/terminal-app.jar /app/terminal-app.jar
+
+# Установка рабочей директории внутри контейнера
+WORKDIR /app
+
+# Запуск Java-приложения при старте контейнера
+CMD ["java", "-jar", "terminal-app.jar"]
